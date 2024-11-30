@@ -1,11 +1,12 @@
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
 
 @app.get("/")
-def hello_world():
-    return "hello world"
+async def root():
+    return JSONResponse(content={"status": "OK"})
 
 
 if __name__ == "__main__":
