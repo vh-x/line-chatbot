@@ -1,2 +1,4 @@
 fastapi
 uvicorn
+load_dotenv
+line-bot-sdk
