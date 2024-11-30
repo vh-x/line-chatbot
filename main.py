@@ -1,3 +1,6 @@
+import requests
+from urllib.parse import urlencode
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 
@@ -12,7 +15,9 @@ from linebot.v3.messaging import (
 )
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
+from cities import CITIES
 from config import LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET
+from weather import get_weather
 
 app = FastAPI()
 
@@ -49,15 +54,34 @@ async def callback(request: Request):
     return JSONResponse(content={"status": "OK"})
 
 
+memory = {}
+
+
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event: MessageEvent):
+    message = event.message.text
+    userId = event.source.user_id if event.source.user_id else None
+    reply_message = ""
+    if message in CITIES:
+        reply_message = f"{message} 是個好地方"
+        weather = get_weather(message)
+        if weather:
+            reply_message = f"{message} 的天氣為 {weather.get("status")}，時間為 {weather.get("startTime")} 至 {weather.get("endTime")}"
+
+    if userId in memory:
+        memory[userId] += 1
+    else:
+        memory[userId] = 1
+
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 notificationDisabled=True,
                 replyToken=event.reply_token,
-                messages=[TextMessage(text=event.message.text)],
+                messages=[
+                    TextMessage(text=reply_message if reply_message else message)
+                ],
             )
         )
 
