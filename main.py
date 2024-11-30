@@ -66,7 +66,10 @@ def handle_message(event: MessageEvent):
         reply_message = f"{message} 是個好地方"
         weather = get_weather(message)
         if weather:
-            reply_message = f"{message} 的天氣為 {weather.get("status")}，時間為 {weather.get("startTime")} 至 {weather.get("endTime")}"
+            startTime = weather.get("startTime", "")
+            endTime = weather.get("endTime", "")
+            status = weather.get("status", "")
+            reply_message = f"{message} 在 {startTime} 至 {endTime} 的天氣為 {status}"
 
     if userId in memory:
         memory[userId] += 1
