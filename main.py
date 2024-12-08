@@ -1,4 +1,3 @@
-import requests
 from urllib.parse import urlencode
 
 from fastapi import FastAPI, Request, HTTPException
@@ -15,8 +14,9 @@ from linebot.v3.messaging import (
 )
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
-from cities import CITIES
+from cities import cities
 from config import LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET
+from horoscope import get_results
 from weather import get_weather
 
 app = FastAPI()
@@ -59,31 +59,39 @@ memory = {}
 
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event: MessageEvent):
-    message = event.message.text
-    userId = event.source.user_id if event.source.user_id else None
+    message: str = event.message.text
     reply_message = ""
-    if message in CITIES:
-        reply_message = f"{message} 是個好地方"
-        weather = get_weather(message)
+
+    if "/" in message:
+        try:
+            birth_month, birth_day = map(int, message.split("/"))
+            reply_message = get_results(birth_month, birth_day)
+        except ValueError:
+            reply_message = "請輸入正確的生日格式 (MM/DD)，例如 08/15"
+
+    city = message.replace("台", "臺")
+    if city in cities:
+        weather = get_weather(city)
         if weather:
             startTime = weather.get("startTime", "")
             endTime = weather.get("endTime", "")
             status = weather.get("status", "")
-            reply_message = f"{message} 在 {startTime} 至 {endTime} 的天氣為 {status}"
-
-    if userId in memory:
-        memory[userId] += 1
-    else:
-        memory[userId] = 1
+            reply_message = (
+                f"{city} 在\n" f"從{startTime}\n" f"至 {endTime}\n" f"天氣為 {status}"
+            )
 
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 notificationDisabled=True,
-                replyToken=event.reply_token,
+                replyToken=f"{ event.reply_token }",
                 messages=[
-                    TextMessage(text=reply_message if reply_message else message)
+                    TextMessage(
+                        text=reply_message if reply_message else f"{ message }?",
+                        quickReply=None,
+                        quoteToken=None,
+                    )
                 ],
             )
         )
