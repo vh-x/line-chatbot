@@ -1,5 +1,3 @@
-from urllib.parse import urlencode
-
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 
@@ -61,6 +59,7 @@ memory = {}
 def handle_message(event: MessageEvent):
     message: str = event.message.text
     reply_message = ""
+    city = message.replace("台", "臺")
 
     if "/" in message:
         try:
@@ -69,8 +68,7 @@ def handle_message(event: MessageEvent):
         except ValueError:
             reply_message = "請輸入正確的生日格式 (MM/DD)，例如 08/15"
 
-    city = message.replace("台", "臺")
-    if city in cities:
+    elif city in cities:
         weather = get_weather(city)
         if weather:
             startTime = weather.get("startTime", "")
@@ -79,6 +77,14 @@ def handle_message(event: MessageEvent):
             reply_message = (
                 f"{city} 在\n" f"從{startTime}\n" f"至 {endTime}\n" f"天氣為 {status}"
             )
+
+    elif any(keyword in message for keyword in ["說明", "怎麼用", "什麼"]):
+        reply_message = "請輸入生日格式 (MM/DD，例如: 08/15) 來取得運勢占卜，或縣市名稱來查詢天氣，例如: 台北市"
+
+    elif any(
+        keyword in message for keyword in ["你好", "哈囉", "早安", "午安", "晚安"]
+    ):
+        reply_message = "嗨！你好，請問有什麼需要幫忙的嗎?"
 
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)

@@ -93,4 +93,4 @@ def get_results(birth_month: int, birth_day: int) -> str:
 
     else:
         print("Zodiac not found")
-        return "您輸入的星座無法識別，請檢查日期"
+        return "您輸入的日期無法識別星座，請檢查日期"
