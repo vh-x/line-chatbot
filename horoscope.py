@@ -1,8 +1,13 @@
 import random
 import hashlib
 from dates import zodiac_sign_dates
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+from today import getToday
 
 cache = {}
+last_updated = None
 
 
 def get_horoscope_by_birthday(birth_month: int, birth_day: int):
@@ -57,6 +62,14 @@ def get_horoscope_by_birthday(birth_month: int, birth_day: int):
 
 
 def get_results(birth_month: int, birth_day: int) -> str:
+    global cache
+    global last_updated
+    today = getToday()
+
+    if last_updated != today:
+        cache.clear()
+        last_updated = today
+
     user_zodiac = None
 
     # 星座識別邏輯
