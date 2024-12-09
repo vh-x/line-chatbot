@@ -10,13 +10,7 @@ cache = {}
 last_updated = None
 
 
-class WeatherResult(TypedDict):
-    startTime: str
-    endTime: str
-    status: str
-
-
-def get_weather(city: str) -> WeatherResult | None:
+def get_weather(city: str) -> str:
     global cache, last_updated
 
     today = getToday()
@@ -38,19 +32,20 @@ def get_weather(city: str) -> WeatherResult | None:
         try:
             print(f"fetching weather data from { url }")
             response = requests.get(url).json()
-            weather = response["records"]["location"][0]["weatherElement"][0]["time"][0]
-            if weather:
-                startTime = weather.get("startTime", "")
-                endTime = weather.get("endTime", "")
-                status = weather.get("parameter", {}).get("parameterName", "")
-                cache[city] = {
-                    "startTime": startTime,
-                    "endTime": endTime,
-                    "status": status,
-                }
+            weather_records = response["records"]["location"][0]["weatherElement"][0][
+                "time"
+            ]
+            summary = f"以下是{ city }的天氣預報:\n\n"
+            for data in weather_records:
+                startTime = data.get("startTime", "")
+                endTime = data.get("endTime", "")
+                status = data.get("parameter", {}).get("parameterName", "")
+                summary += f"{ startTime }~\n{ endTime }:\n天氣: { status }\n\n"
+
+            cache[city] = summary
 
         except Exception as e:
             print(e)
-            return None
+            return "無法取得天氣資料"
 
     return cache[city]

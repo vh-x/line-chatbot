@@ -69,16 +69,12 @@ def handle_message(event: MessageEvent):
             reply_message = "請輸入正確的生日格式 (MM/DD)，例如 08/15"
 
     elif city in cities:
-        weather = get_weather(city)
-        if weather:
-            startTime = weather.get("startTime", "")
-            endTime = weather.get("endTime", "")
-            status = weather.get("status", "")
-            reply_message = (
-                f"{city} 在\n" f"從{startTime}\n" f"至 {endTime}\n" f"天氣為 {status}"
-            )
+        reply_message = get_weather(city)
 
-    elif any(keyword in message for keyword in ["說明", "怎麼用", "什麼"]):
+    elif any(
+        keyword in message
+        for keyword in ["運勢", "占卜", "天氣", "說明", "怎麼用", "什麼"]
+    ):
         reply_message = "請輸入生日格式 (MM/DD，例如: 08/15) 來取得運勢占卜，或縣市名稱來查詢天氣，例如: 台北市"
 
     elif any(
