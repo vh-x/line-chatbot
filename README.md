@@ -6,18 +6,21 @@
 
 ```bash
 python -m venv venv
-
-2. Activate the virtual environment
-for Linux and MacOS:
 ```
 
-````bash
-source venv/bin/activate
+2. Activate the virtual environment
 
-for Windows:
-```cmd
-venv\Scripts\activate.bat
-````
+   for Linux and MacOS:
+
+   ```bash
+   source venv/bin/activate
+   ```
+
+   for Windows:
+
+   ```cmd
+   venv\Scripts\activate.bat
+   ```
 
 3. Install the required packages
 
